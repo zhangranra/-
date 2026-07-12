@@ -1,23 +1,20 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { SiteFooter } from "@/components/site-footer";
+import { SiteHeader } from "@/components/site-header";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
-
 export const metadata: Metadata = {
-  title: "Starter Project",
-  description: "A clean starting point for building your site.",
+  title: "观易｜东方智慧推演平台",
+  description: "以周易卦象理解变化，为当下行动提供可追溯的文化参考。",
   icons: {
     icon: "/favicon.svg",
     shortcut: "/favicon.svg",
+  },
+  openGraph: {
+    title: "观易｜东方智慧推演平台",
+    description: "以周易卦象理解变化，为当下行动提供可追溯的文化参考。",
+    type: "website",
+    locale: "zh_CN",
   },
 };
 
@@ -27,11 +24,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
+    <html lang="zh-CN">
+      <body>
+        <a className="skip-link" href="#main-content">
+          跳到主要内容
+        </a>
+        <SiteHeader />
         {children}
+        <SiteFooter />
       </body>
     </html>
   );
