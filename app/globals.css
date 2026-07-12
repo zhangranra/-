@@ -306,7 +306,13 @@ h2 {
 .field-group input:focus,
 .field-group select:focus {
   border-bottom-color: var(--bronze);
-  outline: 0;
+}
+
+.field-group input:focus-visible,
+.field-group select:focus-visible {
+  border-radius: 6px;
+  outline: 3px solid var(--cinnabar);
+  outline-offset: 4px;
 }
 
 .question-form .primary-button {
@@ -1039,15 +1045,22 @@ h2 {
 
 @media (max-width: 1020px) {
   .header-inner {
+    gap: 18px;
     grid-template-columns: auto 1fr auto;
   }
 
   .desktop-nav {
-    gap: 20px;
+    gap: clamp(12px, 2vw, 20px);
+  }
+
+  .desktop-nav a {
+    font-size: 0.82rem;
   }
 
   .header-action {
-    display: none;
+    min-height: 40px;
+    padding: 0 15px;
+    font-size: 0.78rem;
   }
 
   .hero {
@@ -1150,6 +1163,7 @@ h2 {
   }
 
   .mobile-menu summary {
+    position: relative;
     display: flex;
     width: 42px;
     height: 42px;
@@ -1167,7 +1181,39 @@ h2 {
     display: none;
   }
 
-  .mobile-menu summary span {
+  .menu-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    border: 0;
+    margin: -1px;
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+    overflow: hidden;
+    white-space: nowrap;
+  }
+
+  .menu-label-open {
+    display: none;
+  }
+
+  .mobile-menu[open] .menu-label-closed {
+    display: none;
+  }
+
+  .mobile-menu[open] .menu-label-open {
+    display: block;
+  }
+
+  .menu-icon {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  .menu-icon i {
+    display: block;
     width: 16px;
     height: 1px;
     background: var(--ink);

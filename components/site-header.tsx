@@ -21,7 +21,11 @@ export function SiteHeader() {
         </nav>
         <Link className="header-action" href="/divination">开始起卦 <span aria-hidden="true">→</span></Link>
         <details className="mobile-menu">
-          <summary aria-label="打开导航菜单"><span /><span /><span /></summary>
+          <summary>
+            <span className="menu-label menu-label-closed">打开导航菜单</span>
+            <span className="menu-label menu-label-open">关闭导航菜单</span>
+            <span className="menu-icon" aria-hidden="true"><i /><i /><i /></span>
+          </summary>
           <nav aria-label="移动端主要导航">
             {navItems.map(([label, href]) => <Link href={href} key={href}>{label}</Link>)}
           </nav>

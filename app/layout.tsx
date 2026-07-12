@@ -7,8 +7,8 @@ export const metadata: Metadata = {
   title: "观易｜东方智慧推演平台",
   description: "以周易卦象理解变化，为当下行动提供可追溯的文化参考。",
   icons: {
-    icon: "/favicon.svg",
-    shortcut: "/favicon.svg",
+    icon: "/favicon.png",
+    shortcut: "/favicon.png",
   },
   openGraph: {
     title: "观易｜东方智慧推演平台",
