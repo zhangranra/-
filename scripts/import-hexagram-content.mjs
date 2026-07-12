@@ -5,11 +5,13 @@ import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { readFileAtRevision } from "./import-hexagram-content-lib.mjs";
 
 const SOURCE_REPOSITORY = "https://github.com/kanripo/KR1a0001.git";
 const SOURCE_COMMIT = "8284adbf9e3435d713180e24f05bf75f8b7d1d96";
 const projectRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const outputPath = join(projectRoot, "features/content/hexagram-records.ts");
+const modernInterpretationsPath = join(projectRoot, "features/content/modern-interpretations.json");
 
 const pinyin = [
   "qián", "kūn", "zhūn", "méng", "xū", "sòng", "shī", "bǐ",
@@ -45,17 +47,56 @@ const themes = [
 ];
 
 const lineStages = ["起步", "显现", "转折", "过渡", "主导", "收束"];
-const lineAdvice = [
-  "先观察基础，不宜躁进。",
-  "找到支点，稳步展开。",
-  "留意转折，及时校正。",
-  "进退之间，审慎取舍。",
-  "承担主责，守中而行。",
-  "收束复盘，防止走极端。",
-];
-
 function assert(condition, message) {
   if (!condition) throw new Error(message);
+}
+
+function assertExactKeys(value, expectedKeys, location) {
+  const actual = Object.keys(value).sort();
+  const expected = [...expectedKeys].sort();
+  assert(JSON.stringify(actual) === JSON.stringify(expected), `${location} 字段应为 ${expected.join("、")}，实际 ${actual.join("、")}`);
+}
+
+function requireModernString(value, sequence, field) {
+  assert(typeof value === "string" && value.trim().length > 0, `现代解读 ${sequence}.${field} 必须是非空字符串`);
+  return value;
+}
+
+function readModernInterpretations() {
+  let parsed;
+  try {
+    parsed = JSON.parse(readFileSync(modernInterpretationsPath, "utf8"));
+  } catch (error) {
+    throw new Error(`现代解读 JSON 无法解析：${error.message}`);
+  }
+
+  assert(Array.isArray(parsed), "现代解读根节点必须是数组");
+  assert(parsed.length === 64, `现代解读应有 64 卦，实际 ${parsed.length}`);
+  const allStrings = [];
+
+  parsed.forEach((modern, index) => {
+    const sequence = index + 1;
+    assert(modern && typeof modern === "object" && !Array.isArray(modern), `现代解读 ${sequence} 必须是对象`);
+    assertExactKeys(modern, ["sequence", "judgmentPlain", "opportunity", "risk", "advice", "lines"], `现代解读 ${sequence}`);
+    assert(modern.sequence === sequence, `现代解读卦序错误：位置 ${sequence} 的 sequence 为 ${modern.sequence}`);
+    for (const field of ["judgmentPlain", "opportunity", "risk", "advice"]) {
+      allStrings.push(requireModernString(modern[field], sequence, field));
+    }
+    assert(Array.isArray(modern.lines), `现代解读 ${sequence}.lines 必须是数组`);
+    assert(modern.lines.length === 6, `现代解读 ${sequence}.lines 应有 6 爻，实际 ${modern.lines.length}`);
+    modern.lines.forEach((line, lineIndex) => {
+      const position = lineIndex + 1;
+      assert(line && typeof line === "object" && !Array.isArray(line), `现代解读 ${sequence}.lines.${position} 必须是对象`);
+      assertExactKeys(line, ["position", "plain", "advice"], `现代解读 ${sequence}.lines.${position}`);
+      assert(line.position === position, `现代解读 ${sequence}.lines.${position}.position 应为 ${position}，实际 ${line.position}`);
+      allStrings.push(requireModernString(line.plain, sequence, `lines.${position}.plain`));
+      allStrings.push(requireModernString(line.advice, sequence, `lines.${position}.advice`));
+    });
+  });
+
+  assert(allStrings.length === 1_024, `现代解读字符串应有 1024 条，实际 ${allStrings.length}`);
+  assert(new Set(allStrings).size === allStrings.length, "现代解读存在重复字符串，必须逐卦逐爻独立撰写");
+  return parsed;
 }
 
 function acquireSource(providedDirectory) {
@@ -91,9 +132,10 @@ function splitQianImages(text) {
   return sentences.map((sentence) => `《象》曰：${sentence}`);
 }
 
-function parseHexagram(sourceDirectory, sequence, metadata) {
-  const filename = join(sourceDirectory, `KR1a0001_${String(sequence).padStart(3, "0")}.txt`);
-  const raw = readFileSync(filename, "utf8");
+function parseHexagram(sourceDirectory, sequence, metadata, modern) {
+  const relativePath = `KR1a0001_${String(sequence).padStart(3, "0")}.txt`;
+  const filename = join(sourceDirectory, relativePath);
+  const raw = readFileAtRevision(sourceDirectory, SOURCE_COMMIT, relativePath);
   const pages = raw.split(/<pb:[^>]+>¶\s*/).slice(1).map(cleanPage).filter(Boolean);
   const heading = pages[0];
   const trigramMatch = heading.match(/([䷀-䷿])([乾坤震巽坎離艮兌]+)下([乾坤震巽坎離艮兌]+)上/);
@@ -111,12 +153,12 @@ function parseHexagram(sourceDirectory, sequence, metadata) {
     theme: themes[sequence - 1],
     stage: `${themes[sequence - 1]}阶段`,
     judgment: "",
-    judgmentPlain: `${metadata.name}卦提醒：面对${themes[sequence - 1]}，宜审时而动。`,
+    judgmentPlain: modern.judgmentPlain,
     tuan: "",
     greatImage: "",
-    opportunity: `把握${themes[sequence - 1]}中的有利条件。`,
-    risk: `避免在${themes[sequence - 1]}时急于求成。`,
-    advice: "先辨明处境，再选择稳妥行动。",
+    opportunity: modern.opportunity,
+    risk: modern.risk,
+    advice: modern.advice,
     lines: [],
   };
 
@@ -139,9 +181,9 @@ function parseHexagram(sourceDirectory, sequence, metadata) {
         title: ordinaryLine[1],
         classic: ordinaryLine[2],
         smallImage: "",
-        plain: `此爻处于${metadata.name}卦的${lineStages[position - 1]}，应结合原文审慎判断。`,
+        plain: modern.lines[position - 1].plain,
         stage: lineStages[position - 1],
-        advice: lineAdvice[position - 1],
+        advice: modern.lines[position - 1].advice,
       };
       record.lines.push(line);
       activeTarget = line;
@@ -215,7 +257,10 @@ const source = acquireSource(process.argv[2]);
 try {
   verifySource(source.directory);
   const metadata = readMapMetadata();
-  const records = metadata.map((item) => parseHexagram(source.directory, item.sequence, item));
+  const modernInterpretations = readModernInterpretations();
+  const records = metadata.map((item) =>
+    parseHexagram(source.directory, item.sequence, item, modernInterpretations[item.sequence - 1]),
+  );
   assert(records.flatMap((record) => record.lines).length === 384, "普通爻记录总数必须为 384");
   writeFileSync(outputPath, serialize(records));
   process.stdout.write(`生成 ${records.length} 卦、${records.flatMap((record) => record.lines).length} 爻：${outputPath}\n`);

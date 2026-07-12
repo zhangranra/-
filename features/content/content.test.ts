@@ -25,7 +25,9 @@ describe("hexagram content", () => {
     }
 
     expect(HEXAGRAMS.flatMap((hexagram) => hexagram.lines)).toHaveLength(384);
-    expect(HEXAGRAMS.filter((hexagram) => hexagram.specialLine)).toHaveLength(2);
+    expect(getHexagram(1).specialLine?.title).toBe("用九");
+    expect(getHexagram(2).specialLine?.title).toBe("用六");
+    expect(HEXAGRAMS.slice(2).every((hexagram) => hexagram.specialLine === undefined)).toBe(true);
   });
 
   it("keeps modern interpretation fields non-empty and separate", () => {
@@ -50,6 +52,22 @@ describe("hexagram content", () => {
         expect(line.plain).not.toBe(line.classic);
       }
     }
+  });
+
+  it("uses authored hexagram- and line-specific modern interpretations", () => {
+    const modernStrings = HEXAGRAMS.flatMap((hexagram) => [
+      hexagram.judgmentPlain,
+      hexagram.opportunity,
+      hexagram.risk,
+      hexagram.advice,
+      ...hexagram.lines.flatMap((line) => [line.plain, line.advice]),
+    ]);
+
+    expect(modernStrings).toHaveLength(1_024);
+    expect(new Set(modernStrings).size).toBe(modernStrings.length);
+    expect(modernStrings.join("\n")).not.toMatch(
+      /应结合原文审慎判断|把握.+中的有利条件|避免在.+时急于求成|先辨明处境，再选择稳妥行动/,
+    );
   });
 
   it("resolves Qian by sequence and slug", () => {
