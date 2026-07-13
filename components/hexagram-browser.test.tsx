@@ -23,6 +23,19 @@ describe("HexagramBrowser", () => {
     expect(screen.getAllByTestId("hexagram-card")).toHaveLength(64);
   });
 
+  it.each([
+    ["qian", "乾为天"],
+    ["shi he", "火雷噬嗑"],
+  ])("matches ASCII pinyin query %s against tone-marked catalog content", (query, fullName) => {
+    render(<HexagramBrowser hexagrams={HEXAGRAMS} />);
+
+    fireEvent.change(screen.getByRole("searchbox", { name: "搜索六十四卦" }), {
+      target: { value: query },
+    });
+
+    expect(screen.getByRole("heading", { name: fullName })).toBeInTheDocument();
+  });
+
   it("filters every visible card by upper trigram and clears back to 64", () => {
     render(<HexagramBrowser hexagrams={HEXAGRAMS} />);
 

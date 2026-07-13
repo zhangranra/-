@@ -1517,7 +1517,7 @@ export const HEXAGRAM_RECORDS = [
     "sequence": 21,
     "name": "噬嗑",
     "fullName": "火雷噬嗑",
-    "pinyin": "shì kè",
+    "pinyin": "shì hé",
     "slug": "shi-ke",
     "symbol": "䷔",
     "upper": "离",

@@ -35,7 +35,12 @@ function isLineValue(value: unknown): value is LineValue {
 }
 
 function isTimestamp(value: unknown): value is number {
-  return typeof value === "number" && Number.isFinite(value);
+  return (
+    typeof value === "number"
+    && Number.isSafeInteger(value)
+    && value >= 0
+    && Number.isFinite(new Date(value).getTime())
+  );
 }
 
 function isSequence(value: unknown): value is number {
@@ -105,16 +110,18 @@ export function loadDraft(storage: StorageLike): CastingDraft | null {
   }
 }
 
-export function saveRecentReading(storage: StorageLike, reading: RecentReading): void {
+export function saveRecentReading(storage: StorageLike, reading: RecentReading): boolean {
   const storedReading = toRecentReading(reading);
-  if (!storedReading) return;
+  if (!storedReading) return false;
 
   const recentReadings = [storedReading, ...loadRecentReadings(storage)].slice(0, RECENT_LIMIT);
 
   try {
     storage.setItem(RECENT_KEY, JSON.stringify(recentReadings));
+    return true;
   } catch {
     // Saving history is best-effort and must never interrupt the reading flow.
+    return false;
   }
 }
 

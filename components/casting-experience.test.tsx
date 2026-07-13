@@ -164,4 +164,22 @@ describe("CastingExperience", () => {
 
     expect(await screen.findByText("还没有保存的卦例")).toBeInTheDocument();
   });
+
+  it.each([
+    ["negative", -1],
+    ["fractional", 1_789_000_000_000.5],
+  ])("recovers from a %s recent-reading timestamp without rendering it", async (_label, timestamp) => {
+    window.localStorage.setItem("guanyi:recent-readings:v1", JSON.stringify([{
+      question: "损坏的本地记录",
+      domain: "career",
+      values: [7, 7, 7, 7, 7, 7],
+      timestamp,
+      originalSequence: 1,
+    }]));
+
+    renderCasting();
+
+    expect(await screen.findByText("还没有保存的卦例")).toBeInTheDocument();
+    expect(screen.queryByText("损坏的本地记录")).not.toBeInTheDocument();
+  });
 });

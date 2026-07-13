@@ -45,6 +45,8 @@ test("server-renders the hexagram library", async () => {
   assert.match(html, /六十四卦/);
   assert.match(html, /乾为天/);
   assert.match(html, /href=["']\/hexagrams\/qian["']/i);
+  assert.doesNotMatch(html, /潛龍勿用/);
+  assert.ok(Buffer.byteLength(html) < 80_000, "hexagram library response should contain summaries, not full records");
 });
 
 test("server-renders a complete static hexagram detail", async () => {
@@ -73,6 +75,20 @@ test("server-renders the learning center", async () => {
   assert.match(html, /href=["']\/hexagrams["']/i);
 });
 
+test("server-renders the public sources and licensing notice", async () => {
+  const response = await render("/sources");
+  assert.equal(response.status, 200);
+
+  const html = await response.text();
+  assert.match(html, /资料来源与授权/);
+  assert.match(html, /Kanseki Repository \(Kanripo\)/);
+  assert.match(html, /8284adbf9e3435d713180e24f05bf75f8b7d1d96/);
+  assert.match(html, /href=["']https:\/\/github\.com\/kanripo\/KR1a0001["']/i);
+  assert.match(html, /href=["']https:\/\/creativecommons\.org\/licenses\/by-sa\/4\.0\/["']/i);
+  assert.match(html, /现代解释/);
+  assert.match(html, /相同方式共享/);
+});
+
 test("server-renders the Guanyi brand homepage", async () => {
   const response = await render();
   assert.equal(response.status, 200);
@@ -86,6 +102,7 @@ test("server-renders the Guanyi brand homepage", async () => {
   assert.match(html, /href=["']\/divination["']/i);
   assert.match(html, /href=["']\/hexagrams["']/i);
   assert.match(html, /href=["']\/learn["']/i);
+  assert.match(html, /href=["']\/sources["']/i);
   assert.match(html, /href=["']\/divination#recent["']/i);
   assert.match(
     html,

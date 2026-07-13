@@ -87,6 +87,17 @@ describe("reading store", () => {
     expect(loadDraft(storage)).toBeNull();
   });
 
+  it.each([
+    ["negative", -1],
+    ["fractional", 1_789_000_000_000.5],
+    ["out-of-range", 8_640_000_000_000_001],
+  ])("rejects a %s draft timestamp before it reaches date rendering", (_label, timestamp) => {
+    const storage = new MemoryStorage();
+    storage.setItem(DRAFT_KEY, JSON.stringify({ ...draft, timestamp }));
+
+    expect(loadDraft(storage)).toBeNull();
+  });
+
   it("returns safe fallbacks when storage access throws", () => {
     const throwingStorage: StorageLike = {
       getItem() {
@@ -98,9 +109,16 @@ describe("reading store", () => {
     };
 
     expect(() => saveDraft(throwingStorage, draft)).not.toThrow();
-    expect(() => saveRecentReading(throwingStorage, recent(0))).not.toThrow();
+    expect(saveRecentReading(throwingStorage, recent(0))).toBe(false);
     expect(loadDraft(throwingStorage)).toBeNull();
     expect(loadRecentReadings(throwingStorage)).toEqual([]);
+  });
+
+  it("returns true only after the complete recent-reading list is written", () => {
+    const storage = new MemoryStorage();
+
+    expect(saveRecentReading(storage, recent(0))).toBe(true);
+    expect(loadRecentReadings(storage)).toEqual([recent(0)]);
   });
 
   it("keeps the ten newest recent readings under the versioned key", () => {
@@ -133,6 +151,17 @@ describe("reading store", () => {
     expect(loadRecentReadings(storage)).toEqual([]);
 
     storage.setItem(RECENT_KEY, JSON.stringify([{ ...recent(0), values: [7, 7] }]));
+    expect(loadRecentReadings(storage)).toEqual([]);
+  });
+
+  it.each([
+    ["negative", -1],
+    ["fractional", 1_789_000_000_000.5],
+    ["out-of-range", 8_640_000_000_000_001],
+  ])("rejects a %s recent-reading timestamp before it reaches date rendering", (_label, timestamp) => {
+    const storage = new MemoryStorage();
+    storage.setItem(RECENT_KEY, JSON.stringify([{ ...recent(0), timestamp }]));
+
     expect(loadRecentReadings(storage)).toEqual([]);
   });
 

@@ -35,3 +35,8 @@ export interface HexagramContent {
   lines: readonly HexagramLineContent[];
   specialLine?: HexagramSpecialLineContent;
 }
+
+export type HexagramSummary = Pick<
+  HexagramContent,
+  "sequence" | "name" | "fullName" | "pinyin" | "slug" | "symbol" | "upper" | "lower" | "theme"
+>;

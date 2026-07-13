@@ -6,6 +6,7 @@
   --ink: #20231f;
   --muted: #686b63;
   --bronze: #a8844f;
+  --bronze-text: #765d38;
   --cinnabar: #9a493c;
   --serif: "Songti SC", "STSong", "SimSun", "Noto Serif CJK SC", serif;
   --sans: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif;
@@ -107,7 +108,7 @@ h2 {
   gap: 12px;
   align-items: center;
   margin-bottom: 22px;
-  color: var(--bronze);
+  color: var(--bronze-text);
   font-size: 0.74rem;
   font-weight: 700;
   letter-spacing: 0.24em;
@@ -223,8 +224,8 @@ h2 {
 
 .header-action:hover,
 .primary-button:hover {
-  background: var(--bronze);
-  border-color: var(--bronze);
+  background: var(--bronze-text);
+  border-color: var(--bronze-text);
   transform: translateY(-1px);
 }
 
@@ -566,7 +567,7 @@ h2 {
 }
 
 .method-card > span {
-  color: var(--bronze);
+  color: var(--bronze-text);
   font-family: var(--serif);
   font-size: 0.78rem;
 }
@@ -623,7 +624,7 @@ h2 {
   gap: 12px;
   align-items: center;
   border-bottom: 1px solid var(--bronze);
-  color: var(--bronze);
+  color: var(--bronze-text);
   font-weight: 650;
 }
 
@@ -653,7 +654,7 @@ h2 {
   height: 48px;
   border: 1px solid var(--bronze);
   border-radius: 50%;
-  color: var(--bronze);
+  color: var(--bronze-text);
   font-family: var(--serif);
 }
 
@@ -810,13 +811,13 @@ h2 {
   padding: 0 22px;
   border: 1px solid var(--bronze);
   border-radius: 999px;
-  color: #765d38;
+  color: var(--bronze-text);
   font-size: 0.85rem;
   font-weight: 650;
 }
 
 .outline-button:hover {
-  background: var(--bronze);
+  background: var(--bronze-text);
   color: var(--sand);
 }
 
@@ -847,7 +848,7 @@ h2 {
 }
 
 .hexagram-index {
-  color: var(--bronze);
+  color: var(--bronze-text);
   font-family: var(--serif);
   font-size: 0.72rem;
 }
@@ -932,7 +933,7 @@ h2 {
 }
 
 .learning-list li > span {
-  color: var(--bronze);
+  color: var(--bronze-text);
   font-family: var(--serif);
   font-size: 0.72rem;
 }
@@ -1043,6 +1044,71 @@ h2 {
   white-space: nowrap;
 }
 
+/* Sources and licensing */
+.sources-page {
+  overflow: hidden;
+}
+
+.sources-hero {
+  padding-top: clamp(76px, 10vw, 130px);
+  padding-bottom: clamp(50px, 8vw, 92px);
+}
+
+.sources-hero h1 {
+  margin-bottom: 26px;
+  font-size: clamp(3.4rem, 7vw, 6.4rem);
+  letter-spacing: -0.06em;
+  line-height: 1;
+}
+
+.sources-hero > p:last-child {
+  max-width: 720px;
+  margin-bottom: 0;
+  color: var(--muted);
+  font-size: 1.04rem;
+  line-height: 1.95;
+}
+
+.sources-content {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  padding-bottom: clamp(90px, 12vw, 150px);
+  border-top: 1px solid rgb(168 132 79 / 34%);
+  border-left: 1px solid rgb(168 132 79 / 34%);
+}
+
+.sources-content section {
+  min-height: 280px;
+  padding: clamp(28px, 4vw, 44px);
+  border-right: 1px solid rgb(168 132 79 / 34%);
+  border-bottom: 1px solid rgb(168 132 79 / 34%);
+  background: rgb(251 249 244 / 48%);
+}
+
+.sources-content h2 {
+  margin-bottom: 24px;
+  font-size: clamp(1.5rem, 2.7vw, 2.15rem);
+}
+
+.sources-content p {
+  margin-bottom: 0;
+  color: var(--muted);
+  line-height: 1.95;
+}
+
+.sources-content a {
+  color: var(--bronze-text);
+  font-weight: 650;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.sources-content code {
+  overflow-wrap: anywhere;
+  color: var(--ink);
+  font-size: 0.82em;
+}
+
 @media (max-width: 1020px) {
   .header-inner {
     gap: 18px;
@@ -1119,6 +1185,14 @@ h2 {
 @media (max-width: 780px) {
   .section-shell {
     width: min(100% - 36px, 620px);
+  }
+
+  .sources-content {
+    grid-template-columns: 1fr;
+  }
+
+  .sources-content section {
+    min-height: auto;
   }
 
   .section-pad {
@@ -1708,7 +1782,7 @@ h2 {
   place-items: center;
   border: 1px solid rgb(168 132 79 / 35%);
   border-radius: 50%;
-  color: var(--bronze);
+  color: var(--bronze-text);
   font-family: var(--serif);
 }
 
@@ -2172,7 +2246,7 @@ h2 {
 .report-analysis-card span,
 .classic-text-grid article > span,
 .moving-classics small {
-  color: var(--bronze);
+  color: var(--bronze-text);
   font-size: 0.7rem;
   line-height: 1.6;
 }
@@ -2543,7 +2617,7 @@ h2 {
 .library-sequence,
 .library-trigrams span,
 .library-pinyin {
-  color: var(--bronze);
+  color: var(--bronze-text);
   font-size: 0.68rem;
   letter-spacing: 0.12em;
 }
@@ -2632,7 +2706,7 @@ h2 {
 }
 
 .detail-breadcrumb a {
-  color: var(--bronze);
+  color: var(--bronze-text);
 }
 
 .detail-hero {
@@ -2646,7 +2720,7 @@ h2 {
 }
 
 .detail-pinyin {
-  color: var(--bronze);
+  color: var(--bronze-text);
   font-family: var(--serif);
   font-size: 1.25rem;
 }
@@ -2747,7 +2821,7 @@ h2 {
 .detail-classic-grid article > span,
 .line-classic > span,
 .line-plain > span {
-  color: var(--bronze);
+  color: var(--bronze-text);
   font-size: 0.68rem;
   font-weight: 700;
   letter-spacing: 0.13em;
@@ -2864,7 +2938,7 @@ h2 {
 }
 
 .chapter-nav a:hover { background: var(--sand); }
-.chapter-nav span { color: var(--bronze); font-family: var(--sans); font-size: 0.67rem; }
+.chapter-nav span { color: var(--bronze-text); font-family: var(--sans); font-size: 0.67rem; }
 
 .learning-chapters {
   border-top: 1px solid rgb(168 132 79 / 28%);
@@ -2879,7 +2953,7 @@ h2 {
 .learning-chapter + .learning-chapter { border-top: 1px solid rgb(168 132 79 / 28%); }
 .learning-chapter header { display: flex; gap: 28px; align-items: start; margin-bottom: 52px; }
 .learning-chapter header > span { color: var(--cinnabar); font-family: var(--serif); font-size: 3.6rem; line-height: 1; }
-.learning-chapter header p { margin-bottom: 2px; color: var(--bronze); font-size: 0.72rem; letter-spacing: 0.12em; }
+.learning-chapter header p { margin-bottom: 2px; color: var(--bronze-text); font-size: 0.72rem; letter-spacing: 0.12em; }
 .learning-chapter header h2 { font-size: clamp(2.8rem, 5vw, 4.6rem); }
 
 .chapter-body {
@@ -2892,7 +2966,7 @@ h2 {
 .chapter-body > * { min-height: 310px; padding: 36px; border-left: 1px solid rgb(168 132 79 / 28%); }
 .chapter-body > *:first-child { border-left: 0; }
 .chapter-body h3,
-.chapter-body figcaption { margin-bottom: 24px; color: var(--bronze); font-family: var(--sans); font-size: 0.7rem; font-weight: 700; letter-spacing: 0.14em; }
+.chapter-body figcaption { margin-bottom: 24px; color: var(--bronze-text); font-family: var(--sans); font-size: 0.7rem; font-weight: 700; letter-spacing: 0.14em; }
 .chapter-body article p { color: var(--muted); font-size: 0.95rem; line-height: 1.95; }
 .chapter-body figure { margin: 0; background: rgb(251 249 244 / 48%); }
 .chapter-body aside { background: rgb(168 132 79 / 7%); }

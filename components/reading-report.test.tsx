@@ -4,16 +4,16 @@ import { ReadingReport } from "./reading-report";
 import * as castModule from "../features/divination/cast";
 import type { LineValue } from "../features/divination/types";
 import { buildReading } from "../features/reading/build-reading";
-import { loadRecentReadings, saveDraft } from "../features/storage/reading-store";
+import { loadRecentReadings, saveDraft, saveRecentReading } from "../features/storage/reading-store";
 
 const question = "是否适合现在开始新的合作？";
 const movingValues = [9, 7, 7, 7, 7, 7] as const;
 
-function renderReading(values: readonly LineValue[] = movingValues) {
+function renderReading(values: readonly LineValue[] = movingValues, timestamp?: number) {
   const cast = castModule.castHexagram(values);
   const reading = buildReading({ question, domain: "cooperation", cast });
 
-  render(<ReadingReport cast={cast} reading={reading} values={values} />);
+  render(<ReadingReport cast={cast} reading={reading} values={values} timestamp={timestamp} />);
 }
 
 beforeEach(() => {
@@ -75,6 +75,26 @@ describe("ReadingReport", () => {
     ]);
     expect(screen.getByRole("status")).toHaveTextContent("已保存到当前浏览器");
   });
+
+  it("reports a failed write even when an older record has matching visible fields", () => {
+    const timestamp = 1_789_000_000_000;
+    saveRecentReading(window.localStorage, {
+      question,
+      domain: "cooperation",
+      values: movingValues,
+      timestamp,
+      originalSequence: 1,
+      changedSequence: 44,
+    });
+    vi.spyOn(Storage.prototype, "setItem").mockImplementation(() => {
+      throw new Error("quota exceeded");
+    });
+    renderReading(movingValues, timestamp);
+
+    fireEvent.click(screen.getByRole("button", { name: "保存记录" }));
+
+    expect(screen.getByRole("status")).toHaveTextContent("当前浏览器未能保存记录");
+  });
 });
 
 describe("reading page", () => {
@@ -88,14 +108,15 @@ describe("reading page", () => {
       timestamp: 1_789_000_000_000,
     });
 
-    render(
-      await ReadingPage({
-        searchParams: Promise.resolve({
-          lines: "9,7,7,7,7,7",
-          domain: "cooperation",
-        }),
+    const page = await ReadingPage({
+      searchParams: Promise.resolve({
+        lines: "9,7,7,7,7,7",
+        domain: "cooperation",
       }),
-    );
+    });
+
+    expect(castSpy).toHaveBeenCalledOnce();
+    render(page);
 
     expect(await screen.findByText(question)).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "本卦 乾为天" })).toBeInTheDocument();
@@ -115,6 +136,28 @@ describe("reading page", () => {
 
     expect(await screen.findByText("本次问题未能从当前浏览器恢复")).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "本卦 乾为天" })).toBeInTheDocument();
+  });
+
+  it("recovers from an out-of-range local draft timestamp without date rendering", async () => {
+    const { default: ReadingPage } = await import("../app/reading/page");
+    window.localStorage.setItem("guanyi:casting-draft:v1", JSON.stringify({
+      question,
+      domain: "cooperation",
+      values: movingValues,
+      timestamp: 8_640_000_000_000_001,
+    }));
+
+    render(
+      await ReadingPage({
+        searchParams: Promise.resolve({
+          lines: "9,7,7,7,7,7",
+          domain: "cooperation",
+        }),
+      }),
+    );
+
+    expect(await screen.findByText("本次问题未能从当前浏览器恢复")).toBeInTheDocument();
+    expect(screen.queryByText(question)).not.toBeInTheDocument();
   });
 
   it("shows recovery actions and never casts invalid parameters", async () => {

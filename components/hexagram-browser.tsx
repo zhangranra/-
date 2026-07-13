@@ -2,12 +2,22 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import type { HexagramContent } from "../features/content/hexagrams";
+import type { HexagramSummary } from "../features/content/hexagrams";
 
 const TRIGRAM_NAMES = ["乾", "兑", "离", "震", "巽", "坎", "艮", "坤"] as const;
 
 interface HexagramBrowserProps {
-  hexagrams: readonly HexagramContent[];
+  hexagrams: readonly HexagramSummary[];
+}
+
+function normalizeSearchText(value: string): string {
+  return value
+    .normalize("NFD")
+    .replace(/\p{M}+/gu, "")
+    .toLocaleLowerCase("zh-CN")
+    .replace(/[-_]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 export function HexagramBrowser({ hexagrams }: HexagramBrowserProps) {
@@ -16,11 +26,11 @@ export function HexagramBrowser({ hexagrams }: HexagramBrowserProps) {
   const [lower, setLower] = useState("");
 
   const results = useMemo(() => {
-    const normalizedQuery = query.trim().toLocaleLowerCase("zh-CN");
+    const normalizedQuery = normalizeSearchText(query);
     return hexagrams.filter((hexagram) => {
-      const searchable = [hexagram.name, hexagram.fullName, hexagram.pinyin, hexagram.theme]
-        .join(" ")
-        .toLocaleLowerCase("zh-CN");
+      const searchable = normalizeSearchText(
+        [hexagram.name, hexagram.fullName, hexagram.pinyin, hexagram.theme].join(" "),
+      );
       return (
         (!normalizedQuery || searchable.includes(normalizedQuery))
         && (!upper || hexagram.upper === upper)

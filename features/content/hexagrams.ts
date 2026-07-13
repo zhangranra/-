@@ -1,7 +1,20 @@
 import { HEXAGRAM_RECORDS } from "./hexagram-records";
-import type { HexagramContent } from "./types";
+import type { HexagramContent, HexagramSummary } from "./types";
 
 export const HEXAGRAMS: readonly HexagramContent[] = Object.freeze(HEXAGRAM_RECORDS);
+export const HEXAGRAM_SUMMARIES: readonly HexagramSummary[] = Object.freeze(
+  HEXAGRAMS.map(({ sequence, name, fullName, pinyin, slug, symbol, upper, lower, theme }) => ({
+    sequence,
+    name,
+    fullName,
+    pinyin,
+    slug,
+    symbol,
+    upper,
+    lower,
+    theme,
+  })),
+);
 
 const bySequence = new Map(HEXAGRAMS.map((item) => [item.sequence, item]));
 const bySlug = new Map(HEXAGRAMS.map((item) => [item.slug, item]));
@@ -18,4 +31,4 @@ export function getHexagramBySlug(slug: string): HexagramContent {
   return item;
 }
 
-export type { HexagramContent, HexagramLineContent, HexagramSpecialLineContent } from "./types";
+export type { HexagramContent, HexagramLineContent, HexagramSpecialLineContent, HexagramSummary } from "./types";

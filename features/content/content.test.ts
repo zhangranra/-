@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { KING_WEN_BY_TRIGRAMS } from "../divination/king-wen-map";
-import { HEXAGRAMS, getHexagram, getHexagramBySlug } from "./hexagrams";
+import { HEXAGRAMS, HEXAGRAM_SUMMARIES, getHexagram, getHexagramBySlug } from "./hexagrams";
 
 describe("hexagram content", () => {
   it("contains 64 unique King Wen entries", () => {
@@ -10,6 +10,22 @@ describe("hexagram content", () => {
     expect(HEXAGRAMS.map((item) => item.sequence).sort((a, b) => a - b)).toEqual(
       Array.from({ length: 64 }, (_, index) => index + 1),
     );
+  });
+
+  it("projects only the fields needed by the client-side hexagram browser", () => {
+    expect(HEXAGRAM_SUMMARIES).toHaveLength(64);
+    expect(Object.keys(HEXAGRAM_SUMMARIES[0]).sort()).toEqual([
+      "fullName",
+      "lower",
+      "name",
+      "pinyin",
+      "sequence",
+      "slug",
+      "symbol",
+      "theme",
+      "upper",
+    ]);
+    expect(JSON.stringify(HEXAGRAM_SUMMARIES).length).toBeLessThan(JSON.stringify(HEXAGRAMS).length / 4);
   });
 
   it("contains six unique, ordered lines for every hexagram", () => {

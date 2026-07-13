@@ -2,14 +2,12 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { castHexagram } from "../features/divination/cast";
 import type { CastResult, LineValue } from "../features/divination/types";
-import { buildReading, type StructuredReading } from "../features/reading/build-reading";
+import type { StructuredReading } from "../features/reading/build-reading";
 import type { ReadingDomain } from "../features/reading/domain-profiles";
 import type { ReadingLineValues } from "../features/routing/reading-params";
 import {
   loadDraft,
-  loadRecentReadings,
   saveRecentReading,
 } from "../features/storage/reading-store";
 import { HexagramGlyph } from "./hexagram-glyph";
@@ -23,17 +21,16 @@ interface ReadingReportProps {
 
 interface ReadingReportLoaderProps {
   values: ReadingLineValues;
-  domain: ReadingDomain;
+  cast: CastResult;
+  reading: StructuredReading;
 }
 
 interface LoadedReport {
-  cast: CastResult;
   reading: StructuredReading;
   timestamp?: number;
 }
 
 const POSITION_LABELS = ["初爻", "二爻", "三爻", "四爻", "五爻", "上爻"] as const;
-const MISSING_QUESTION = "本次问题未能从当前浏览器恢复";
 
 function getBrowserStorage(): Storage | null {
   try {
@@ -74,7 +71,7 @@ export function ReadingReport({ cast, reading, values, timestamp }: ReadingRepor
     }
 
     const savedAt = timestamp ?? Date.now();
-    saveRecentReading(storage, {
+    const saved = saveRecentReading(storage, {
       question: reading.question,
       domain: reading.domain,
       values,
@@ -82,12 +79,6 @@ export function ReadingReport({ cast, reading, values, timestamp }: ReadingRepor
       originalSequence: cast.original.sequence,
       ...(cast.changed ? { changedSequence: cast.changed.sequence } : {}),
     });
-
-    const saved = loadRecentReadings(storage).some((record) =>
-      record.timestamp === savedAt
-      && record.originalSequence === cast.original.sequence
-      && record.question === reading.question,
-    );
     setSaveStatus(saved ? "已保存到当前浏览器。" : "当前浏览器未能保存记录，请保留本页作为参考。");
   }
 
@@ -221,7 +212,7 @@ export function ReadingReport({ cast, reading, values, timestamp }: ReadingRepor
   );
 }
 
-export function ReadingReportLoader({ values, domain }: ReadingReportLoaderProps) {
+export function ReadingReportLoader({ values, cast, reading }: ReadingReportLoaderProps) {
   const [loaded, setLoaded] = useState<LoadedReport | null>(null);
 
   useEffect(() => {
@@ -232,17 +223,13 @@ export function ReadingReportLoader({ values, domain }: ReadingReportLoaderProps
 
       const storage = getBrowserStorage();
       const draft = storage ? loadDraft(storage) : null;
-      const matchedDraft = draftMatches(draft, values, domain) ? draft : null;
-      const cast = castHexagram(values);
-      const reading = buildReading({
-        question: matchedDraft?.question.trim() || MISSING_QUESTION,
-        domain,
-        cast,
-      });
+      const matchedDraft = draftMatches(draft, values, reading.domain) ? draft : null;
 
       setLoaded({
-        cast,
-        reading,
+        reading: {
+          ...reading,
+          question: matchedDraft?.question.trim() || reading.question,
+        },
         ...(matchedDraft ? { timestamp: matchedDraft.timestamp } : {}),
       });
     });
@@ -250,7 +237,7 @@ export function ReadingReportLoader({ values, domain }: ReadingReportLoaderProps
     return () => {
       cancelled = true;
     };
-  }, [domain, values]);
+  }, [reading, values]);
 
   if (!loaded) {
     return (
@@ -262,7 +249,7 @@ export function ReadingReportLoader({ values, domain }: ReadingReportLoaderProps
 
   return (
     <ReadingReport
-      cast={loaded.cast}
+      cast={cast}
       reading={loaded.reading}
       values={values}
       timestamp={loaded.timestamp}

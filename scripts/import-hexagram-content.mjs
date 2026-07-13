@@ -16,7 +16,7 @@ const modernInterpretationsPath = join(projectRoot, "features/content/modern-int
 const pinyin = [
   "qián", "kūn", "zhūn", "méng", "xū", "sòng", "shī", "bǐ",
   "xiǎo xù", "lǚ", "tài", "pǐ", "tóng rén", "dà yǒu", "qiān", "yù",
-  "suí", "gǔ", "lín", "guān", "shì kè", "bì", "bō", "fù",
+  "suí", "gǔ", "lín", "guān", "shì hé", "bì", "bō", "fù",
   "wú wàng", "dà xù", "yí", "dà guò", "kǎn", "lí", "xián", "héng",
   "dùn", "dà zhuàng", "jìn", "míng yí", "jiā rén", "kuí", "jiǎn", "xiè",
   "sǔn", "yì", "guài", "gòu", "cuì", "shēng", "kùn", "jǐng",

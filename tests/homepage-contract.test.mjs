@@ -4,6 +4,34 @@ import test from "node:test";
 
 const root = new URL("../", import.meta.url);
 
+function rgbFromHex(hex) {
+  const match = /^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(hex);
+  assert.ok(match, `expected a six-digit hex color, received ${hex}`);
+  return match.slice(1).map((channel) => Number.parseInt(channel, 16));
+}
+
+function relativeLuminance(hex) {
+  const channels = rgbFromHex(hex).map((channel) => {
+    const normalized = channel / 255;
+    return normalized <= 0.04045
+      ? normalized / 12.92
+      : ((normalized + 0.055) / 1.055) ** 2.4;
+  });
+  return 0.2126 * channels[0] + 0.7152 * channels[1] + 0.0722 * channels[2];
+}
+
+function contrastRatio(foreground, background) {
+  const lighter = Math.max(relativeLuminance(foreground), relativeLuminance(background));
+  const darker = Math.min(relativeLuminance(foreground), relativeLuminance(background));
+  return (lighter + 0.05) / (darker + 0.05);
+}
+
+function cssToken(styles, token) {
+  const value = styles.match(new RegExp(`${token}:\\s*(#[0-9a-f]{6})`, "i"))?.[1];
+  assert.ok(value, `expected ${token} to be a six-digit hex token`);
+  return value;
+}
+
 test("form controls keep an explicit keyboard focus ring", async () => {
   const styles = await readFile(new URL("app/globals.css", root), "utf8");
   const focusRule = styles.match(
@@ -68,4 +96,27 @@ test("mobile header and footer controls keep 44px hit targets", async () => {
     mobileRules[1],
     /\.footer-nav a\s*\{(?=[^}]*display:\s*flex)(?=[^}]*align-items:\s*center)(?=[^}]*min-height:\s*44px)[^}]*\}/s,
   );
+});
+
+test("small bronze text and bronze hover treatments meet WCAG AA contrast", async () => {
+  const styles = await readFile(new URL("app/globals.css", root), "utf8");
+  const paper = cssToken(styles, "--paper");
+  const sand = cssToken(styles, "--sand");
+  const bronzeText = cssToken(styles, "--bronze-text");
+
+  for (const [label, foreground, background] of [
+    ["small bronze text on paper", bronzeText, paper],
+    ["small bronze text on sand", bronzeText, sand],
+    ["sand text on bronze hover", sand, bronzeText],
+  ]) {
+    assert.ok(
+      contrastRatio(foreground, background) >= 4.5,
+      `${label} must have at least 4.5:1 contrast`,
+    );
+  }
+
+  assert.match(styles, /\.library-sequence,[\s\S]*?\.library-pinyin\s*\{[^}]*color:\s*var\(--bronze-text\)/);
+  assert.match(styles, /\.report-analysis-card span,[\s\S]*?\.moving-classics small\s*\{[^}]*color:\s*var\(--bronze-text\)/);
+  assert.match(styles, /\.header-action:hover,[\s\S]*?\.primary-button:hover\s*\{[^}]*background:\s*var\(--bronze-text\)[^}]*border-color:\s*var\(--bronze-text\)/s);
+  assert.match(styles, /\.outline-button:hover\s*\{[^}]*background:\s*var\(--bronze-text\)[^}]*color:\s*var\(--sand\)/s);
 });

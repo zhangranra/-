@@ -10,7 +10,7 @@ export function SiteFooter() {
         </div>
         <nav className="footer-nav" aria-label="页脚导航">
           <div><strong>开始</strong><Link href="/divination">在线起卦</Link><Link href="/divination#recent">最近记录</Link></div>
-          <div><strong>探索</strong><Link href="/hexagrams">六十四卦</Link><Link href="/learn">学习周易</Link></div>
+          <div><strong>探索</strong><Link href="/hexagrams">六十四卦</Link><Link href="/learn">学习周易</Link><Link href="/sources">资料来源与授权</Link></div>
         </nav>
       </div>
       <div className="section-shell footer-legal">

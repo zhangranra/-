@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { HexagramBrowser } from "@/components/hexagram-browser";
-import { HEXAGRAMS } from "@/features/content/hexagrams";
+import { HEXAGRAM_SUMMARIES } from "@/features/content/hexagrams";
 
 export const metadata: Metadata = {
   title: "六十四卦知识库｜观易",
@@ -18,7 +18,7 @@ export default function HexagramsPage() {
         </p>
       </section>
       <section className="library-content section-shell" aria-label="六十四卦索引">
-        <HexagramBrowser hexagrams={HEXAGRAMS} />
+        <HexagramBrowser hexagrams={HEXAGRAM_SUMMARIES} />
       </section>
     </main>
   );
