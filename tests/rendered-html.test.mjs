@@ -1,13 +1,13 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-async function render() {
+async function render(pathname = "/") {
   const workerUrl = new URL("../dist/server/index.js", import.meta.url);
   workerUrl.searchParams.set("test", `${process.pid}-${Date.now()}`);
   const { default: worker } = await import(workerUrl.href);
 
   return worker.fetch(
-    new Request("http://localhost/", {
+    new Request(`http://localhost${pathname}`, {
       headers: { accept: "text/html" },
     }),
     {
@@ -21,6 +21,42 @@ async function render() {
     },
   );
 }
+
+test("server-renders the hexagram library", async () => {
+  const response = await render("/hexagrams");
+  assert.equal(response.status, 200);
+
+  const html = await response.text();
+  assert.match(html, /六十四卦/);
+  assert.match(html, /乾为天/);
+  assert.match(html, /href=["']\/hexagrams\/qian["']/i);
+});
+
+test("server-renders a complete static hexagram detail", async () => {
+  const response = await render("/hexagrams/qian");
+  assert.equal(response.status, 200);
+
+  const html = await response.text();
+  assert.match(html, /乾为天/);
+  assert.match(html, /经典卦辞/);
+  assert.match(html, /彖传/);
+  assert.match(html, /大象传/);
+  assert.equal((html.match(/<span>经典爻辞<\/span>/g) ?? []).length, 6);
+  assert.equal((html.match(/<span>白话与行动参考<\/span>/g) ?? []).length, 6);
+});
+
+test("server-renders the learning center", async () => {
+  const response = await render("/learn");
+  assert.equal(response.status, 200);
+
+  const html = await response.text();
+  assert.match(html, /从阴阳理解变化/);
+  for (const chapter of ["阴阳", "八卦", "六十四卦", "六个爻位", "动爻与变卦"]) {
+    assert.match(html, new RegExp(chapter));
+  }
+  assert.match(html, /href=["']\/divination["']/i);
+  assert.match(html, /href=["']\/hexagrams["']/i);
+});
 
 test("server-renders the Guanyi brand homepage", async () => {
   const response = await render();
