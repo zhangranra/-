@@ -1133,6 +1133,7 @@ h2 {
 
   .brand {
     grid-template-columns: 38px auto;
+    min-height: 44px;
   }
 
   .brand > span {
@@ -1152,7 +1153,7 @@ h2 {
 
   .header-action {
     display: inline-flex;
-    min-height: 40px;
+    min-height: 44px;
     padding: 0 16px;
     font-size: 0.78rem;
   }
@@ -1316,6 +1317,12 @@ h2 {
 
   .footer-nav {
     margin-top: 55px;
+  }
+
+  .footer-nav a {
+    display: flex;
+    min-height: 44px;
+    align-items: center;
   }
 }
 
