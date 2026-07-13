@@ -33,8 +33,9 @@ export default async function DivinationPage({ searchParams }: DivinationPagePro
   const question = firstValue(params.question);
   const domainValue = firstValue(params.domain);
   const domain = normalizeDomain(domainValue);
+  const questionIsValid = isSpecificQuestion(question);
 
-  if (!isSpecificQuestion(question) || domain === null) {
+  if (!questionIsValid || domain === null) {
     const selectedDomain = domain ?? "decision";
 
     return (
@@ -57,20 +58,32 @@ export default async function DivinationPage({ searchParams }: DivinationPagePro
                 minLength={4}
                 required
                 placeholder="例如：是否适合在这个季度推进新的项目？"
-                aria-describedby="question-requirement"
+                aria-describedby={questionIsValid ? undefined : "question-requirement"}
               />
-              <p id="question-requirement" className="form-error" role="alert">
-                请输入至少四个非空白字符，并尽量写清正在权衡的行动。
-              </p>
+              {!questionIsValid && (
+                <p id="question-requirement" className="form-error" role="alert">
+                  请输入至少四个非空白字符，并尽量写清正在权衡的行动。
+                </p>
+              )}
             </div>
 
             <div className="field-group">
               <label htmlFor="divination-domain">问题领域</label>
-              <select id="divination-domain" name="domain" defaultValue={selectedDomain}>
+              <select
+                id="divination-domain"
+                name="domain"
+                defaultValue={selectedDomain}
+                aria-describedby={domain === null ? "domain-requirement" : undefined}
+              >
                 {Object.entries(DOMAIN_PROFILES).map(([value, profile]) => (
                   <option value={value} key={value}>{profile.label}</option>
                 ))}
               </select>
+              {domain === null && (
+                <p id="domain-requirement" className="form-error" role="alert">
+                  问题领域无效，请重新选择。
+                </p>
+              )}
             </div>
 
             <button className="primary-button" type="submit">确认问题，开始起卦</button>

@@ -49,6 +49,7 @@ describe("CastingExperience", () => {
       fireEvent.click(screen.getByRole("button", { name: "少阳 7" }));
     }
 
+    expect(screen.getByText("第 6/6 爻")).toBeInTheDocument();
     expect(screen.getByText("六爻已完成")).toBeInTheDocument();
     expect(onComplete).toHaveBeenCalledOnce();
     expect(onComplete).toHaveBeenCalledWith([9, 7, 7, 7, 7, 7]);
@@ -105,6 +106,30 @@ describe("CastingExperience", () => {
     act(() => vi.advanceTimersByTime(620));
 
     expect(onComplete).not.toHaveBeenCalled();
+  });
+
+  it("announces every random coin face and point value with the line result", () => {
+    vi.useFakeTimers();
+    vi.spyOn(Math, "random")
+      .mockReturnValueOnce(0.1)
+      .mockReturnValueOnce(0.9)
+      .mockReturnValueOnce(0.2);
+    const { container } = render(
+      <CastingExperience
+        initialQuestion={question}
+        initialDomain="career"
+        onComplete={vi.fn()}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "随机投掷三枚铜钱" }));
+    act(() => vi.advanceTimersByTime(620));
+
+    const announcement = container.querySelector('[aria-live="polite"]');
+    expect(announcement).toHaveTextContent("第一枚背（2 点）");
+    expect(announcement).toHaveTextContent("第二枚字（3 点）");
+    expect(announcement).toHaveTextContent("第三枚背（2 点）");
+    expect(announcement).toHaveTextContent("总数 7，少阳");
   });
 
   it("shows locally saved recent readings with their casting times", async () => {

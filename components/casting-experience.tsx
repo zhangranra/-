@@ -35,6 +35,7 @@ const LINE_DETAILS: Readonly<Record<LineValue, { label: string; kind: "yin" | "y
 
 const MANUAL_VALUES: readonly LineValue[] = [6, 7, 8, 9];
 const POSITION_LABELS = ["初爻", "二爻", "三爻", "四爻", "五爻", "上爻"] as const;
+const COIN_POSITION_LABELS = ["第一枚", "第二枚", "第三枚"] as const;
 
 function formatCastingTime(timestamp: number): string {
   return new Intl.DateTimeFormat("zh-CN", {
@@ -134,10 +135,13 @@ export function CastingExperience({
 
     const values = [...casting.values, value];
     const position = POSITION_LABELS[values.length - 1];
+    const coinDetails = coins
+      .map((coin, index) => `${COIN_POSITION_LABELS[index]}${coin === 3 ? "字" : "背"}（${coin} 点）`)
+      .join("，");
     setLatestCoins(coins);
     setCasting({ ...casting, values });
     persist(values);
-    setAnnouncement(`${position}结果：${value}，${LINE_DETAILS[value].label}`);
+    setAnnouncement(`${position}结果：${coinDetails}；总数 ${value}，${LINE_DETAILS[value].label}`);
 
     if (values.length === 6) finish(values);
   }
@@ -192,8 +196,8 @@ export function CastingExperience({
             <h1 id="casting-title">从初爻开始，观察变化</h1>
           </div>
           <div className="casting-progress" aria-label={`已完成 ${casting.values.length} 爻，共 6 爻`}>
-            <strong>{isComplete ? "六爻已完成" : `第 ${casting.values.length + 1}/6 爻`}</strong>
-            <span>初爻在下，上爻在上</span>
+            <strong>第 {isComplete ? 6 : casting.values.length + 1}/6 爻</strong>
+            <span>{isComplete ? "六爻已完成" : "初爻在下，上爻在上"}</span>
           </div>
         </div>
 
