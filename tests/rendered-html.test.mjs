@@ -1,14 +1,19 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-async function render(pathname = "/") {
+async function render(pathname = "/", origin = "http://localhost") {
+  const requestUrl = new URL(pathname, origin);
   const workerUrl = new URL("../dist/server/index.js", import.meta.url);
   workerUrl.searchParams.set("test", `${process.pid}-${Date.now()}`);
   const { default: worker } = await import(workerUrl.href);
 
   return worker.fetch(
-    new Request(`http://localhost${pathname}`, {
-      headers: { accept: "text/html" },
+    new Request(requestUrl, {
+      headers: {
+        accept: "text/html",
+        host: requestUrl.host,
+        "x-forwarded-proto": requestUrl.protocol.slice(0, -1),
+      },
     }),
     {
       ASSETS: {
@@ -20,6 +25,16 @@ async function render(pathname = "/") {
       passThroughOnException() {},
     },
   );
+}
+
+function metaContent(html, attribute, value) {
+  const escapedValue = value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const attributePattern = `${attribute}=["']${escapedValue}["']`;
+  const contentPattern = `content=["']([^"']*)["']`;
+  const forward = new RegExp(`<meta(?=[^>]*${attributePattern})[^>]*${contentPattern}[^>]*>`, "i");
+  const reverse = new RegExp(`<meta(?=[^>]*${attributePattern})(?=[^>]*${contentPattern})[^>]*>`, "i");
+  const match = html.match(forward) ?? html.match(reverse);
+  return match?.[1];
 }
 
 test("server-renders the hexagram library", async () => {
@@ -97,4 +112,18 @@ test("server-renders the Guanyi brand homepage", async () => {
     assert.ok(currentIndex > previousIndex, `${marker} should follow the prior homepage section`);
     previousIndex = currentIndex;
   }
+});
+
+test("server-renders request-host-derived social metadata", async () => {
+  const response = await render("/", "https://preview.guanyi.example");
+  assert.equal(response.status, 200);
+
+  const html = await response.text();
+  assert.equal(metaContent(html, "property", "og:title"), "观易｜东方智慧推演平台");
+  assert.equal(metaContent(html, "property", "og:description"), "观天地之变，明当下之势");
+  assert.equal(
+    metaContent(html, "property", "og:image"),
+    "https://preview.guanyi.example/og.png",
+  );
+  assert.equal(metaContent(html, "name", "twitter:card"), "summary_large_image");
 });
