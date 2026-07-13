@@ -1166,8 +1166,8 @@ h2 {
   .mobile-menu summary {
     position: relative;
     display: flex;
-    width: 42px;
-    height: 42px;
+    width: 44px;
+    height: 44px;
     flex-direction: column;
     gap: 5px;
     align-items: center;

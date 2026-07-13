@@ -51,7 +51,7 @@ test("mobile menu exposes distinct open and closed accessible labels", async () 
   assert.match(styles, /\.mobile-menu\[open\] \.menu-label-open\s*\{[^}]*display:\s*block/s);
 });
 
-test("mobile header and footer links keep 44px hit targets", async () => {
+test("mobile header and footer controls keep 44px hit targets", async () => {
   const styles = await readFile(new URL("app/globals.css", root), "utf8");
   const mobileRules = styles.match(
     /@media \(max-width: 780px\)\s*\{([\s\S]*?)\n\}\n\n@media \(max-width: 520px\)/,
@@ -60,6 +60,10 @@ test("mobile header and footer links keep 44px hit targets", async () => {
   assert.ok(mobileRules, "expected the 780px mobile breakpoint");
   assert.match(mobileRules[1], /\.brand\s*\{[^}]*min-height:\s*44px/s);
   assert.match(mobileRules[1], /\.header-action\s*\{[^}]*min-height:\s*44px/s);
+  assert.match(
+    mobileRules[1],
+    /\.mobile-menu summary\s*\{(?=[^}]*width:\s*44px)(?=[^}]*height:\s*44px)[^}]*\}/s,
+  );
   assert.match(
     mobileRules[1],
     /\.footer-nav a\s*\{(?=[^}]*display:\s*flex)(?=[^}]*align-items:\s*center)(?=[^}]*min-height:\s*44px)[^}]*\}/s,
